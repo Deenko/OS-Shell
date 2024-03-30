@@ -1,17 +1,23 @@
-#include <stdio.h>
+#define _GNU_SOURCE
+
+
+#include <sched.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <errno.h> // For errno
-#include <fcntl.h> // For open
+#include <errno.h>
+#include <fcntl.h>
 #include <time.h>
 #include <string.h>
+#include <stdio.h>
+#include <sched.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_ARGS 128
-
 
 
 
@@ -52,6 +58,36 @@ void reset_color() {
     printf("\033[0m");
 }
 
+void execlexample(){
+    execl("/bin/ls", "ls", NULL);
+}
+
+int cp(){
+    set_color_green();
+    printf("Child process running! (PID: %d)\n", getpid());
+    reset_color();
+    return 0;
+}
+
+int cloneexample(){
+    const int STACK_SIZE = 1024 * 1024;
+    char *child_stack = malloc(STACK_SIZE) + STACK_SIZE;
+
+
+    pid_t child_pid = clone(cp, child_stack, SIGCHLD, NULL);
+
+    if (child_pid == -1) {
+        perror("clone() failed");
+        return 1;
+    }
+
+    set_color_magenta();
+    printf("Parent process (PID: %d) waiting...\n", getpid());
+    wait(NULL);
+    printf("Child process finished.\n");
+    return 0;
+
+}
 
 void bye(){
 
@@ -61,6 +97,27 @@ void bye(){
     system("clear");
 }
 
+void forkExample(){
+
+
+    pid_t child_pid;
+
+    child_pid = fork();
+
+    if (child_pid < 0) {
+        fprintf(stderr, "Fork failed\n");
+    } else if (child_pid == 0) {
+        set_color_green();
+        printf("Child process: (PID: %d)\n", getpid());
+        reset_color();
+    } else {
+        set_color_magenta();
+        printf("Parent process: (PID: %d)\n", getpid());
+        wait(NULL);
+        reset_color();
+        exit(1);
+    }
+}
 
 
 void randomColor(void) {
@@ -169,15 +226,31 @@ void forkbomb(){
             printf("\nFor your safety, we will exit.\n");
             break;
         }
+    }
+}
 
 
+void waitexample(){
+    int i, stat;
+    pid_t pid[10];
+    for (i=0; i<10; i++)
+    {
+        if ((pid[i] = fork()) == 0)
+        {
+            sleep(1);
+            exit(100 + i);
+        }
     }
 
-
-
-
-
-
+    for (i=0; i<7; i++)
+    {
+        pid_t cpid = waitpid(pid[i], &stat, 0);
+        randomColor();
+        if (WIFEXITED(stat))
+            printf("Child %d terminated with exit status code of: %d\n",
+                   cpid, WEXITSTATUS(stat));
+    }
+    reset_color();
 }
 
 
@@ -194,6 +267,16 @@ void help(){
     printf("7. cmatrix\n");
     printf("8. exit\n");
 }
+
+void execexample(){
+    set_color_blue();
+    char *args[]={"./main",NULL};
+    execvp(args[0],args);
+    set_color_blue();
+
+}
+
+
 
 
 void lotrIntro(){
@@ -249,12 +332,12 @@ char *get_prompt() {
 }
 
 void execute_command(char *args[]) {
-    int pipe_fds[2]; // File descriptors for the pipe
-    int pipe_index = -1; // Index of the pipe in args, if present
+    int pipe_fds[2];
+    int pipe_index = -1;
     int status;
     pid_t pid1, pid2;
 
-    // Check for a pipe in the command
+    // Check for pipe
     for (int i = 0; args[i] != NULL; i++) {
         if (strcmp(args[i], "|") == 0) {
             pipe_index = i;
@@ -262,8 +345,8 @@ void execute_command(char *args[]) {
         }
     }
 
-    if (pipe_index != -1) { // Pipe exists in the command
-        args[pipe_index] = NULL; // Split the args array into two at the pipe
+    if (pipe_index != -1) {
+        args[pipe_index] = NULL;
 
         // Create a pipe
         if (pipe(pipe_fds) == -1) {
@@ -271,15 +354,15 @@ void execute_command(char *args[]) {
             return;
         }
 
-        // First command (before the pipe)
+        // First command
         pid1 = fork();
         if (pid1 < 0) {
             perror("Fork failed");
             return;
-        } else if (pid1 == 0) { // Child process for the first command
-            close(pipe_fds[0]); // Close unused read end
-            dup2(pipe_fds[1], STDOUT_FILENO); // Replace stdout with pipe write end
-            close(pipe_fds[1]); // Close original write end of the pipe
+        } else if (pid1 == 0) {
+            close(pipe_fds[0]);
+            dup2(pipe_fds[1], STDOUT_FILENO);
+            close(pipe_fds[1]);
 
             if (execvp(args[0], args) == -1) {
                 perror("Execution failed");
@@ -287,15 +370,15 @@ void execute_command(char *args[]) {
             }
         }
 
-        // Second command (after the pipe)
+        // Second command
         pid2 = fork();
         if (pid2 < 0) {
             perror("Fork failed");
             return;
-        } else if (pid2 == 0) { // Child process for the second command
-            close(pipe_fds[1]); // Close unused write end
-            dup2(pipe_fds[0], STDIN_FILENO); // Replace stdin with pipe read end
-            close(pipe_fds[0]); // Close original read end of the pipe
+        } else if (pid2 == 0) {
+            close(pipe_fds[1]);
+            dup2(pipe_fds[0], STDIN_FILENO);
+            close(pipe_fds[0]);
 
             if (execvp(args[pipe_index + 1], &args[pipe_index + 1]) == -1) {
                 perror("Execution failed");
@@ -304,12 +387,13 @@ void execute_command(char *args[]) {
         }
 
         // Parent process
-        close(pipe_fds[0]); // Close the read end of the pipe
-        close(pipe_fds[1]); // Close the write end of the pipe
-        waitpid(pid1, &status, 0); // Wait for the first child
-        waitpid(pid2, &status, 0); // Wait for the second child
+        close(pipe_fds[0]);
+        close(pipe_fds[1]);
+        waitpid(pid1, &status, 0);
+        waitpid(pid2, &status, 0);
     } else {
-        // Original code for executing a single command without piping
+
+        // No Pipe
         pid_t pid = fork();
         if (pid < 0) {
             perror("Fork failed");
@@ -324,7 +408,7 @@ void execute_command(char *args[]) {
                 exit(EXIT_FAILURE);
             }
         } else {
-            wait(NULL); // Parent process waits for the child to finish
+            wait(NULL);
         }
     }
 }
@@ -349,7 +433,7 @@ void runShell() {
     while (1) {
         set_color_magenta();
 
-        // Print the prompt
+
         prompt = get_prompt();
         printf("%s", prompt);
         free(prompt);
@@ -359,7 +443,7 @@ void runShell() {
             break;
         }
 
-        // Tokenize input
+        // Token EYES!!!
         char *token = strtok(input, " \t\n");
         int i = 0;
         while (token != NULL && i < MAX_ARGS - 1) {
@@ -368,7 +452,7 @@ void runShell() {
         }
         args[i] = NULL;
 
-        // Execute command
+        // Exec command =)
         if (args[0] != NULL) {
             if (strcmp(args[0], "exit") == 0) {
                 set_color_magenta();
@@ -387,12 +471,27 @@ void runShell() {
             } else if(strcmp(args[0], "easteregg") == 0) {
                thing();
             }
-
-
-
-
-
-
+            else if(strcmp(args[0], "fork") == 0) {
+                forkExample();
+            }
+            else if(strcmp(args[0], "wait") == 0) {
+                waitexample();
+            }
+            else if(strcmp(args[0], "exec") == 0) {
+                char *input1;
+                set_color_red();
+                printf("Are you sure you want to run EXEC ? (Y/N)");
+                scanf("%s", input1);
+                if (strcmp(input1, "Y")== 0 || strcmp("y", input1) == 0){
+                    execexample();
+                }
+            }
+            else if(strcmp(args[0], "execl") == 0) {
+                execlexample();
+            }
+            else if(strcmp(args[0], "clone") == 0) {
+                cloneexample();
+            }
             else {
                 set_color_red();
                 printf("%s: command not found\n", args[0]);

@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/deenko/CLionProjects/OS/cmake-build-debug"
+			"value" : "/home/deenko/OS-Shell/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -415,7 +415,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/deenko/CLionProjects/OS/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "/home/deenko/OS-Shell/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -475,7 +475,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/deenko/CLionProjects/OS"
+			"value" : "/home/deenko/OS-Shell"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1023,7 +1023,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/deenko/CLionProjects/OS/cmake-build-debug"
+			"value" : "/home/deenko/OS-Shell/cmake-build-debug"
 		},
 		{
 			"name" : "OS_IS_TOP_LEVEL",
@@ -1047,7 +1047,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/deenko/CLionProjects/OS"
+			"value" : "/home/deenko/OS-Shell"
 		},
 		{
 			"name" : "_CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED",
