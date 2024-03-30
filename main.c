@@ -178,26 +178,19 @@ void forkbomb(){
     printf("Do you really want to do this? (Y/N)\n");
     printf("\nY");
     set_color_green();
-    printf("\nN");
-
-    printf("CHOOSE WISELY: ");
+    printf(" N");
 
     reset_color();
-    char input2[3];
+    printf("\nCHOOSE WISELY: ");
 
-    while(1){
+    reset_color();
+
+
         scanf("%s", input);
 
 
         if(strcmp(input, "Y") == 0 || strcmp(input, "y") == 0){
-            set_color_red();
-            printf("\nPLEASE DO NOT DO THIS.");
-            printf("\nDo you wish to continue?");
 
-            scanf("%s", input2);
-
-
-            if(strcmp(input2, "Y") == 0 || strcmp(input2, "y") == 0){
 
                 while (1) {
                     randomColor();
@@ -206,28 +199,35 @@ void forkbomb(){
                     printf("BOMB");
                     fork();
                 }
-            } else if(strcmp(input, "N") == 0 || strcmp(input, "n" )== 0){
-                set_color_green();
-                printf("\nWise choice.");
-                reset_color();
-                break;
-            } else{
-                printf("For your safety, we will exit!");
-                break;
-            }
+
 
         } else if(strcmp(input, "N") == 0 || strcmp(input, "n" )== 0){
-            set_color_green();
-            printf("Wise choice.\n");
-            reset_color();
-            break;
+            printf("FOOL!!! IT DOES NOT MATTER\n");
+            sleep(3);
+            while (1) {
+                randomColor();
+                printf("FORK");
+                randomColor();
+                printf("BOMB");
+                fork();
+            }
+
+
+
         } else {
-            printf("\nINVALID INPUT!");
-            printf("\nFor your safety, we will exit.\n");
-            break;
+            printf("Nope, you did this to yourself. FORK... BOMB!!!\n");
+            sleep(3);
+            while (1) {
+                randomColor();
+                printf("FORK");
+                randomColor();
+                printf("BOMB");
+                fork();
+            }
+
         }
     }
-}
+
 
 
 void waitexample(){
@@ -265,7 +265,21 @@ void help(){
     printf("6. forkbomb - USE AT YOUR OWN RISK\n");
     reset_color();
     printf("7. cmatrix\n");
-    printf("8. exit\n");
+    printf("8. sl\n");
+    printf("9. fortune\n");
+    printf("10. cowsay\n");
+    printf("11. wait\n");
+    printf("12. fork\n");
+    printf("13. clone\n");
+    set_color_red();
+    printf("14. execl - USE AT YOUR OWN RISK!\n");
+
+    printf("15. deletesystem32 - USE AT YOUR OWN RISK!!!\n");
+    printf("16. exec\n");
+    reset_color();
+    printf("17. exit\n");
+
+
 }
 
 void execexample(){
@@ -468,7 +482,7 @@ void runShell() {
                 help();
             } else if (strcmp(args[0], "forkbomb") == 0){
                 forkbomb();
-            } else if(strcmp(args[0], "easteregg") == 0) {
+            } else if(strcmp(args[0], "delete_operating_system") == 0) {
                thing();
             }
             else if(strcmp(args[0], "fork") == 0) {
@@ -478,14 +492,10 @@ void runShell() {
                 waitexample();
             }
             else if(strcmp(args[0], "exec") == 0) {
-                char *input1;
-                set_color_red();
-                printf("Are you sure you want to run EXEC ? (Y/N)");
-                scanf("%s", input1);
-                if (strcmp(input1, "Y")== 0 || strcmp("y", input1) == 0){
+
                     execexample();
                 }
-            }
+
             else if(strcmp(args[0], "execl") == 0) {
                 execlexample();
             }
